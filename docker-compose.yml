@@ -1,0 +1,55 @@
+version: "3.2"
+services:
+    php:
+        build: './php/'
+        networks:
+            - backend
+        volumes:
+            - ./public_html/:/var/www/html/
+    apache:
+        build: './apache/'
+        depends_on:
+            - php
+            # - db
+        networks:
+            - frontend
+            - backend
+        ports:
+            - "8080:80"
+        volumes:
+            - ./public_html/:/var/www/html/
+    db:
+        image: mysql:5.7
+        volumes:
+            # - ./dump:/docker-entrypoint-initdb.d
+            - db_data:/var/lib/mysql
+        restart: always
+        ports:
+            - "3306:3306"
+        networks:
+            - backend
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            # MYSQL_ROOT_HOST: db
+            MYSQL_DATABASE: wordpress
+            MYSQL_USER: wordpress
+            MYSQL_PASSWORD: wordpress
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        networks:
+            # - frontend
+            - backend
+        ports:
+            - 8181:80
+        depends_on:
+            - php
+            - apache
+            - db
+        # environment:
+            # MYSQL_USERNAME: wordpress
+            # MYSQL_ROOT_PASSWORD: root
+volumes:
+    db_data:
+networks:
+    frontend:
+    backend:
